@@ -1,0 +1,58 @@
+package com.ihouse.core.jdbc.constants;
+
+
+public interface JdbcConstants {
+    String ACTION_NAME = "@tx_action_name";
+    String SP_PARAM_TYPE_IN = "IN";
+    String SP_PARAM_TYPE_NULL = "NULL";
+    String SP_PARAM_TYPE_INOUT = "INOUT";
+    String SP_PARAM_TYPE_OUT = "OUT";
+    String SP_PARAM_TYPE_OUTPUT = "OUTPUT";
+    String SP_PARAM_NULLABLE = "NULLABLE";
+    String SP_PARAM_NOT_NULLABLE = "NOT_NULLABLE";
+    String SP_PARAM_PREFIX = "@";
+    String SP_PARAM_PREFIX_MYSQL = "p_";
+    String SP_PARAM_SQL_COMMENTS = "--";
+    String SP_PARAM_BEGIN_STR = " (";
+    String SP_PARAM_PLACEHOLDER = "?,";
+    String SP_PARAM_PLACEHOLDER_QUESTION = "?";
+    String SP_PARAM_END_STR = ")";
+    String STR_CURLY_BR_OPEN = "{";
+    String STR_CURLY_BR_END = "}";
+    String STR_SQUARE_BRACKET_END = "]";
+    String STR_SQUARE_BRACKET_START = "[";
+    String JDBC_SINGLE_QUOTE = "'";
+    String JDBC_ESCAPTED_QUOTE = "''";
+    String JDBC_RS_TYPE_COL_NAME = "tx_rs_type";
+    String JDBC_SQL_RESULT_SET = "JDBC_RESULT_SET";
+    String JDBC_SQL_WARNING = "JDBC_SQL_WARNING";
+    String JDBC_SQL_EXCEPTION = "JDBC_SQL_EXCEPTION";
+    String JDBC_SQL_OUTPUT_PARAMS = "JDBC_SQL_OUTPUT_PARAMS";
+    String JDBC_RS_TYPE_ALL = "RS_TYPE_ALL";
+    String JDBC_DEFAULT_SCHEMA_DBO = "dbo";
+    String JDBC_DOT = ".";
+    String JDBC_CALL = "CALL";
+    String JDBC_COLON = ":";
+    String STR_SPACE = " ";
+    String JDBC_CALL_SPACE = "CALL ";
+    String STR_EMPTY = "";
+    String STR_DOT = ".";
+    String STR_DT_ = "dt_";
+    String STR_DTT_ = "dtt_";
+    String JDBC_EQUAL = "=";
+    String STR_COMMA = ",";
+    String JDBC_NEW_LINE = System.getProperty("line.separator");
+    String TX_RS_TYPE = "tx_rs_type";
+    String TX_DF_yyyy_MM_dd = "yyyy-MM-dd";
+    String STR_PROCEDURE_CAT = "PROCEDURE_CAT";
+    String STR_PROCEDURE_SCHEM = "PROCEDURE_SCHEM";
+    String STR_PROCEDURE_NAME = "PROCEDURE_NAME";
+    String STR_COLUMN_NAME = "COLUMN_NAME";
+    String STR_COLUMN_TYPE = "COLUMN_TYPE";
+    String STR_DATA_TYPE = "DATA_TYPE";
+    String STR_TYPE_NAME = "TYPE_NAME";
+    String STR_F_SLASH = "/";
+    String STR_date = "date";
+    String F_date = " 00:00:00";
+    String STR_NEW_LINE = System.getProperty("line.separator");
+}
