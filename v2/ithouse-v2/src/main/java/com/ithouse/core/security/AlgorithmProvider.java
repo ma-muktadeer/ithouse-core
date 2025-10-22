@@ -5,7 +5,7 @@ import com.ithouse.core.security.interfaces.Algorithm;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AlgorithmProvider implements Algorithm {
+class AlgorithmProvider implements Algorithm {
 
     public Map<String, String> arg0() throws Exception {
         Map<String, String> map = new HashMap<>();

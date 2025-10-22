@@ -3,7 +3,7 @@ package com.ithouse.core.security;
 import com.ithouse.core.security.interfaces.Algorithm;
 import com.ithouse.core.security.interfaces.Security;
 
-public abstract class AbstractSecurity implements Security {
+abstract class AbstractSecurity implements Security {
 
     private final Algorithm map;
 
