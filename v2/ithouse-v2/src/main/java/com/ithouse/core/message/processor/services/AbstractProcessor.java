@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractProcessor implements JsonProcessor {
+abstract class AbstractProcessor implements JsonProcessor {
 
     private static final Logger logger = LogManager.getLogger(AbstractProcessor.class);
     private final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
@@ -26,6 +26,10 @@ public abstract class AbstractProcessor implements JsonProcessor {
 
     protected AbstractProcessor() {
         mapper = createDefaultMapper();
+    }
+
+    public void setClassMap(Map<String, String> classMap) {
+        this.classMap = classMap;
     }
 
     protected AbstractProcessor(ObjectMapper mapper) {

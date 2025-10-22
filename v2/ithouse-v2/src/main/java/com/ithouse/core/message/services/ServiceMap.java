@@ -13,7 +13,7 @@ public class ServiceMap {
         return serviceMap;
     }
 
-    public void setServiceMap(LinkedHashMap<String, Service<?>> serviceMap) {
+    public void setServiceMap(Map<String, Service<?>> serviceMap) {
         this.serviceMap = serviceMap;
     }
 }
