@@ -35,7 +35,7 @@
 		<!-- Spring Boot Core without default logging -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+			<artifactId>spring-boot-starter-web</artifactId>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>
@@ -43,12 +43,20 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
-		<!-- Use Log4j2 instead of Logback -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j2</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-spring-boot</artifactId>
+		</dependency>
+
+		<!-- Use Log4j2 instead of Logback -->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-log4j2</artifactId>-->
+<!--		</dependency>-->
 
 		<!-- JasperReports -->
 		<dependency>

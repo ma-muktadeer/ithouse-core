@@ -22,7 +22,7 @@ public class AbstractMessageHeader {
     private String errorMsg;
     private Integer errorCode;
     private String comments;
-    private String references;
+    private String reference;
     Map<String, Object> extraInfoMap;
 
 
@@ -178,12 +178,12 @@ public class AbstractMessageHeader {
         this.comments = comments;
     }
 
-    public String getReferences() {
-        return references;
+    public String getReference() {
+        return reference;
     }
 
-    public void setReferences(String references) {
-        this.references = references;
+    public void setReference(String reference) {
+        this.reference = reference;
     }
 
     public Map<String, Object> getExtraInfoMap() {
