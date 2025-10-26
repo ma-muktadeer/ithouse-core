@@ -1,7 +1,7 @@
 package com.ithouse.core.message.processor.services;
 
-import org.springframework.stereotype.Service;
+//import org.springframework.stereotype.Service;
 
-@Service
+//@Service
 public class ProcessorService extends AbstractProcessor{
 }

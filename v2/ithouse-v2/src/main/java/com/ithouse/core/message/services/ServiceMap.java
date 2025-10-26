@@ -2,7 +2,6 @@ package com.ithouse.core.message.services;
 
 import com.ithouse.core.message.interfaces.Service;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ServiceMap {
