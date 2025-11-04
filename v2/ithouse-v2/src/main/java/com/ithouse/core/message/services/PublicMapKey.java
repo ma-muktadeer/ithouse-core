@@ -3,8 +3,8 @@ package com.ithouse.core.message.services;
 import java.util.Objects;
 
 public class PublicMapKey {
-    private String actionType;
-    private String contentType;
+    private final String actionType;
+    private final String contentType;
 
     public PublicMapKey(String actionType, String contentType) {
         this.actionType = actionType;

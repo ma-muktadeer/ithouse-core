@@ -43,6 +43,7 @@ public class AbstractCoordinator implements Coordinator {
 //        }
         Service<?> service = null;
         if (isPublicController) {
+            Objects.requireNonNull(publicMapService, "PublicMapService is null");
             service = publicMapService.getService(message.getHeader());
         } else {
             service = getServiceByName(message.getHeader().getContentType());
