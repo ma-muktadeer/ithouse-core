@@ -14,5 +14,5 @@ public @interface ItHouseDBValue {
 
     String configGroup() default "APP_CONFIG_GROUP";
 
-    String configSubGroup() default "APP_CONFIG_SUBGROUP";
+    String configSubGroup();
 }
