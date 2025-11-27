@@ -7,9 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.Environment;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +26,9 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
     private ApplicationContext context;
     private final ItHouseDBValueService itHouseDBValueService;
     private final ObjectMapper objectMapper;
+
+    @Autowired
+    private Environment env;
 
     public ItHouseDBValueInjector(ItHouseDBValueService itHouseDBValueService, ObjectMapper objectMapper) {
         this.itHouseDBValueService = itHouseDBValueService;
@@ -52,28 +58,28 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
     }
 
     private void processBean(Object bean) {
-        Class<?> clazz = bean.getClass();
-        // Handle CGLIB proxies
-        if (clazz.getName().contains("$$")) {
-            clazz = clazz.getSuperclass();
+        Object targetBean = AopProxyUtils.getSingletonTarget(bean);
+        if (targetBean == null) {
+            targetBean = bean;
         }
 
-        for (Field field : clazz.getDeclaredFields()) {
+        for (Field field : targetBean.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(ItHouseDBValue.class)) {
                 ItHouseDBValue annotation = field.getAnnotation(ItHouseDBValue.class);
                 String value = itHouseDBValueService.getConfigValue(
                         annotation.configGroup(),
                         annotation.configSubGroup(),
-                        annotation.defaultValue());
+                        // annotation.defaultValue()
+                        env.resolvePlaceholders(annotation.defaultValue()));
 
                 try {
                     field.setAccessible(true);
 
                     switch (field.getType().getSimpleName()) {
-                        case "List" -> field.set(bean, parseList(value, field));
-                        case "Map" -> field.set(bean, parse2Map(value, field));
-                        case "String" -> field.set(bean, value);
-                        default -> field.set(bean, objectMapper.convertValue(value, field.getType()));
+                        case "List" -> field.set(targetBean, parseList(value, field));
+                        case "Map" -> field.set(targetBean, parse2Map(value, field));
+                        case "String" -> field.set(targetBean, value);
+                        default -> field.set(targetBean, objectMapper.convertValue(value, field.getType()));
                     }
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException("Failed to inject ItHouseDBValue for field: " + field.getName(), e);
