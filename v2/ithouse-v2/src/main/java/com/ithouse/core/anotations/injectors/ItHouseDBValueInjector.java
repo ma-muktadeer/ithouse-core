@@ -106,10 +106,13 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
             return objectMapper.readValue(rawValue,
                     objectMapper.getTypeFactory().constructMapType(Map.class, key, value));
         } catch (Exception e) {
+            if (rawValue == null || rawValue.trim().isEmpty()) {
+                return new HashMap<>();
+            }
             Map<Object, Object> map = new HashMap<>();
             String[] pairs = rawValue.split("[,;]");
             for (String pair : pairs) {
-                String[] entry = pair.split("[=:]");
+                String[] entry = pair.split("[=:]", 2);
                 if (entry.length != 2) {
                     continue;
                 }
