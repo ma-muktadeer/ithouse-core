@@ -1,5 +1,6 @@
 package com.ithouse.core.anotations;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ithouse.core.anotations.injectors.ItHouseDBValueInjector;
 import com.ithouse.core.anotations.provider.ItHouseConfigProvider;
 import com.ithouse.core.anotations.services.ItHouseDBValueService;
@@ -52,8 +53,8 @@ public class ItHouseDBValueProviderTest {
         }
 
         @Bean
-        public ItHouseDBValueInjector itHouseDBValueInjector(ItHouseDBValueService service) {
-            return new ItHouseDBValueInjector(service);
+        public ItHouseDBValueInjector itHouseDBValueInjector(ItHouseDBValueService service, ObjectMapper objectMapper) {
+            return new ItHouseDBValueInjector(service, objectMapper);
         }
     }
 }
