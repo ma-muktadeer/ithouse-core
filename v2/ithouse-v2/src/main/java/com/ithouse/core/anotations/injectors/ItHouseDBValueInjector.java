@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +35,7 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
     }
 
     @Override
-    public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.context = applicationContext;
     }
 
