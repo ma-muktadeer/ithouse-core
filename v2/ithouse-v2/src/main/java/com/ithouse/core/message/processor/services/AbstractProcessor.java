@@ -89,10 +89,9 @@ abstract class AbstractProcessor implements JsonProcessor {
         message.setHeader(header);
 
         final String contentType = header.getContentType();
-        final String className = classMap.get(contentType);
-        Objects.requireNonNull(className, String.format("Object type '%s' not include in the class map", contentType));
 
-        final Class<?> payloadClass = resolvePayloadClass(contentType, className);
+        final Class<?> payloadClass = findPayloadClass(contentType);
+
         final JsonNode payloadNode = rootNode.path("payload");
         if (payloadNode.isMissingNode() || payloadNode.isNull()) {
             message.setPayload(null);
@@ -109,6 +108,13 @@ abstract class AbstractProcessor implements JsonProcessor {
             message.setPayload((T) Collections.singletonList(payload));
         }
         return message;
+    }
+
+    public Class<?> findPayloadClass(String contentType) {
+        final String className = classMap.get(contentType);
+        Objects.requireNonNull(className, String.format("Object type '%s' not include in the class map", contentType));
+
+        return resolvePayloadClass(contentType, className);
     }
 
     private Class<?> resolvePayloadClass(String contentType, String className) {

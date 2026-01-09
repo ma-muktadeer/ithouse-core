@@ -24,7 +24,8 @@ public class AbstractMessageHeader {
     private String comments;
     private String reference;
     Map<String, Object> extraInfoMap;
-
+    private Integer pageNumber;
+    private Integer pageSize;
 
     public String getRequestId() {
         return requestId;
@@ -192,5 +193,21 @@ public class AbstractMessageHeader {
 
     public void setExtraInfoMap(Map<String, Object> extraInfoMap) {
         this.extraInfoMap = extraInfoMap;
+    }
+
+    public Integer getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(Integer pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize;
     }
 }

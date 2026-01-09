@@ -1,6 +1,7 @@
 package com.ithouse.core.message;
 
 import com.ithouse.core.message.interfaces.Coordinator;
+import com.ithouse.core.message.interfaces.EnablePagination;
 import com.ithouse.core.message.interfaces.Message;
 import com.ithouse.core.message.interfaces.Service;
 import com.ithouse.core.message.services.PublicMapService;
@@ -8,6 +9,7 @@ import com.ithouse.core.message.services.ServiceMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.List;
 import java.util.Objects;
 
 public class AbstractCoordinator implements Coordinator {
@@ -37,10 +39,6 @@ public class AbstractCoordinator implements Coordinator {
 
     @Override
     public Message<?> service(Message<?> message, Boolean isPublicController) throws Exception {
-//        if (isPublic && (publicMapService.getMap().isEmpty() || !publicMapService.getMap().containsKey(message.getHeader().getActionType()))) {
-//            logger.error("Service not map in the public action=>{}", message.getHeader().getActionType());
-//            throw new Exception("Service not map in the public action=>" + message.getHeader().getActionType());
-//        }
         Service<?> service = null;
         if (isPublicController) {
             Objects.requireNonNull(publicMapService, "PublicMapService is null");
@@ -55,4 +53,43 @@ public class AbstractCoordinator implements Coordinator {
 
         return service.itHouseService(message);
     }
+
+
+    @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public Message<?> service(AbstractMessageHeader header, Class<?> payloadClass, Boolean isPublicController) throws Exception {
+        GenericMessage message = new GenericMessage();
+        message.setHeader(header);
+        message.setPayload(setDefaultPayload(payloadClass, header.getPageNumber(), header.getPageSize()));
+        return service(message, isPublicController);
+    }
+
+    private <T> List<T> setDefaultPayload(Class<T> payloadClass, Integer pageNumber, Integer pageSize) {
+        try {
+            T payload = payloadClass.getDeclaredConstructor().newInstance();
+            if (payload instanceof EnablePagination) {
+                ((EnablePagination) payload).setPageNumber(pageNumber);
+                ((EnablePagination) payload).setPageSize(pageSize);
+            }
+            return List.of(payload);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not create default", e);
+        }
+    }
+
+
+//    private <T> T setDefaultPayload(Class<?> payloadClass) {
+//        try {
+//            var payload = payloadClass.getDeclaredConstructor().newInstance();
+//            if (payload instanceof EnablePagination) {
+//                ((EnablePagination) payload).setPageNumber(1);
+//                ((EnablePagination) payload).setPageSize(10);
+//            }
+//
+//            return (T) payload;
+//        } catch (Exception e) {
+//            throw new RuntimeException("Could not create payload", e);
+//        }
+//    }
+
 }
