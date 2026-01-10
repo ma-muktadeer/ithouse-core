@@ -1,9 +1,9 @@
 package com.ithouse.core.message.interfaces;
 
 public interface EnablePagination {
-    void setPageNumber(int page);
-    void setPageSize(int size);
-    int getPageNumber();
-    int getPageSize();
+    void setPageNumber(Integer page);
+    void setPageSize(Integer size);
+    Integer getPageNumber();
+    Integer getPageSize();
 
 }
