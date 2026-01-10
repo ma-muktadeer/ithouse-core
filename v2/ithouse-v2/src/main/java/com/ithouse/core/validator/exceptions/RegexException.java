@@ -1,4 +1,4 @@
-package com.ihouse.core.message.validator.exceptions;
+package com.ithouse.core.validator.exceptions;
 
 import java.io.Serial;
 

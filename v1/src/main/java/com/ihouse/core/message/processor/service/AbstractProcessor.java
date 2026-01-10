@@ -84,9 +84,7 @@ public class AbstractProcessor implements GsonProcessor, JsonProcessor {
     }
 
     public ArrayNode getJsonArray(String json, String memberName) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        JsonNode rootNode = objectMapper.readTree(json);
+        JsonNode rootNode = mapper.readTree(json);
         return this.findArrayNode(rootNode, memberName);
 
     }

@@ -1,4 +1,4 @@
-package com.ihouse.core.message.validator.service;
+package com.ithouse.core.validator.service;
 
 import java.util.Map;
 

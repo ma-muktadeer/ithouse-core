@@ -1,6 +1,6 @@
-package com.ihouse.core.message.validator.service;
+package com.ithouse.core.validator.service;
 
-import com.ihouse.core.message.validator.anotations.RegexMatch;
+import com.ithouse.core.validator.anotations.RegexMatch;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.stereotype.Service;
@@ -29,6 +29,7 @@ public class RegexValidatorService implements ConstraintValidator<RegexMatch, St
 
     @Override
     public void initialize(RegexMatch annotation) {
+
         this.regexType = annotation.regexType();
     }
 

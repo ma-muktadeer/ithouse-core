@@ -1,6 +1,6 @@
-package com.ihouse.core.message.validator.anotations;
+package com.ithouse.core.validator.anotations;
 
-import com.ihouse.core.message.validator.service.RegexValidatorService;
+import com.ithouse.core.validator.service.RegexValidatorService;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 

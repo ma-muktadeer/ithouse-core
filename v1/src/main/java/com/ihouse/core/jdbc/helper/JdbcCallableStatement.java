@@ -50,13 +50,12 @@ public class JdbcCallableStatement extends AbstractJdbcStatement {
             Map<String, JdbcParameter> spOutParams = this.jdbcStoredProcedure.getSpOutputParamMap();
             String preparedSql;
             if (spOutParams != null) {
-                Iterator var4 = spOutParams.keySet().iterator();
 
-                while(var4.hasNext()) {
-                    preparedSql = (String)var4.next();
+                for (String string : spOutParams.keySet()) {
+                    preparedSql = string;
                     if (!sqlArgsMap.containsKey(preparedSql)) {
                         log.debug("Auto Adding output Param {}", preparedSql);
-                        sqlArgsMap.put(preparedSql, (Object)null);
+                        sqlArgsMap.put(preparedSql, (Object) null);
                     }
                 }
             }
