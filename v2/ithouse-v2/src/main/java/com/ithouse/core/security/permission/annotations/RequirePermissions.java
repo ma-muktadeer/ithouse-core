@@ -9,4 +9,7 @@ public @interface RequirePermissions {
     String[] value();
 
     boolean allRequired() default false;
+
+    String[] roles() default {};
+    boolean checkRole() default false;
 }

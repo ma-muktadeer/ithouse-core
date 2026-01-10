@@ -2,6 +2,7 @@ package com.ithouse.core.security.permission.aspect;
 
 
 import com.ithouse.core.security.permission.PermissionChecker;
+import com.ithouse.core.security.permission.RoleChecker;
 import com.ithouse.core.security.permission.annotations.RequirePermissions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +19,8 @@ public class PermissionAspect {
 
     @Autowired(required = false)
     private PermissionChecker permissionChecker;
+    @Autowired(required = false)
+    private RoleChecker roleChecker;
 
     @Before("@annotation(requirePermissions)")
     public void checkPermissions(JoinPoint joinPoint, RequirePermissions requirePermissions) {
@@ -25,14 +28,16 @@ public class PermissionAspect {
             logger.error("No PermissionChecker bean found! Please implement it in your application.");
             return;
         }
-        String[] permissions = requirePermissions.value();
-        boolean allRequired = requirePermissions.allRequired();
-
-        boolean hasPermission = permissionChecker.hasPermission(permissions, allRequired);
-
-        if(!hasPermission){
-            logger.error("Access Denied! Required permissions=>[{}]", String.join(",", permissions));
-            throw  new SecurityException("Access denied");
+        try {
+            if (requirePermissions.checkRole()) {
+                roleChecker.checkRole(requirePermissions.roles());
+            }
+            else {
+                permissionChecker.hasPermission(requirePermissions.value(), requirePermissions.allRequired());
+            }
+        } catch (Exception e) {
+            logger.error("getting error=>{}\n{}", e.getMessage(), e);
+            throw new RuntimeException("Access denied");
         }
     }
 
