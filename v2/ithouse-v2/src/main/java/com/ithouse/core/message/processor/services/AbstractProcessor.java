@@ -3,12 +3,16 @@ package com.ithouse.core.message.processor.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.ithouse.core.message.AbstractMessageHeader;
+import com.ithouse.core.message.FilePayload;
 import com.ithouse.core.message.GenericMessage;
 import com.ithouse.core.message.GenericMessageHeader;
+import com.ithouse.core.message.interfaces.EnableFile;
 import com.ithouse.core.message.interfaces.Message;
 import com.ithouse.core.message.processor.interfaces.JsonProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
@@ -144,4 +148,50 @@ abstract class AbstractProcessor implements JsonProcessor {
 
     }
 
+//    private Class<? extends EnableFile> resolveFileClass(String contentType, String className) {
+//        Class<?> rawClass = classCache.computeIfAbsent(contentType, key -> {
+//            try {
+//                return Class.forName(className);
+//            } catch (ClassNotFoundException e) {
+//                throw new IllegalStateException("Unknown class for content type: " + key, e);
+//            }
+//        });
+//        return rawClass.asSubclass(EnableFile.class);
+//    }
+
+
+    //    public EnableFile buildFileEntity(String type, String metadata, List<MultipartFile> files) throws JsonProcessingException {
+//       Class<? extends EnableFile> clazz = resolveFileClass(type, type);
+//       EnableFile entity = mapper.readValue(metadata, clazz);
+//       entity.setFiles(files);
+//        return entity;
+//    }
+
+    public <T> EnableFile<T> buildFileEntity(String type, String metadata, List<MultipartFile> files) throws JsonProcessingException {
+
+        Class<?> itemClass = resolvePayloadClass(type, type);
+        JavaType listType = mapper.getTypeFactory().constructCollectionType(List.class, itemClass);
+        List<T> items = mapper.readValue(metadata, listType);
+        FilePayload<T> payload = new FilePayload<>();
+        payload.setItems(items);
+        payload.setFiles(files);
+
+        return payload;
+    }
+
+    public <T> Message<T> buildMessage(EnableFile<T> enableFile, AbstractMessageHeader abstractMessageHeader) {
+        GenericMessage<T> message = new GenericMessage<>();
+        message.setPayload((T) enableFile.getItems());
+        message.setHeader(abstractMessageHeader);
+        return message;
+    }
+
+
+//    private <T extends EnableFile> T convert(EnableFile enFl, Class<?> rawClass) {
+//        Class<T> targetClass = (Class<T>) rawClass.asSubclass(EnableFile.class);
+//        if (!targetClass.isInstance(enFl)) {
+//            throw new IllegalArgumentException("Object is not of type " + targetClass.getSimpleName());
+//        }
+//        return targetClass.cast(enFl);
+//    }
 }
