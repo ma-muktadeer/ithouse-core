@@ -169,7 +169,7 @@ abstract class AbstractProcessor implements JsonProcessor {
 
     public <T> EnableFile<T> buildFileEntity(String type, String metadata, List<MultipartFile> files) throws JsonProcessingException {
 
-        Class<?> itemClass = resolvePayloadClass(type, type);
+        Class<?> itemClass = findPayloadClass(type);
         JavaType listType = mapper.getTypeFactory().constructCollectionType(List.class, itemClass);
         List<T> items = mapper.readValue(metadata, listType);
         FilePayload<T> payload = new FilePayload<>();

@@ -34,8 +34,8 @@ public class FileEntityResolver implements HandlerMethodArgumentResolver {
                                             NativeWebRequest webRequest,
                                             @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
-        List<MultipartFile> file = webRequest.getParameterValues("file") != null
-                ? ((MultipartHttpServletRequest) webRequest.getNativeRequest()).getFiles("file") : null;
+        List<MultipartFile> file = webRequest.getParameterValues("files") != null
+                ? ((MultipartHttpServletRequest) webRequest.getNativeRequest()).getFiles("files") : null;
 
         String type = webRequest.getParameter("type");
         String metadata = webRequest.getParameter("metadata");
