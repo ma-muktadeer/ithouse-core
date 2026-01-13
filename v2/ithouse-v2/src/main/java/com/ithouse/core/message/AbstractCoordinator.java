@@ -49,8 +49,6 @@ public class AbstractCoordinator implements Coordinator {
 
         Objects.requireNonNull(service, "Service name is null");
 
-//publicMapService.getMap()
-
         return service.itHouseService(message);
     }
 
@@ -76,20 +74,5 @@ public class AbstractCoordinator implements Coordinator {
             throw new RuntimeException("Could not create default", e);
         }
     }
-
-
-//    private <T> T setDefaultPayload(Class<?> payloadClass) {
-//        try {
-//            var payload = payloadClass.getDeclaredConstructor().newInstance();
-//            if (payload instanceof EnablePagination) {
-//                ((EnablePagination) payload).setPageNumber(1);
-//                ((EnablePagination) payload).setPageSize(10);
-//            }
-//
-//            return (T) payload;
-//        } catch (Exception e) {
-//            throw new RuntimeException("Could not create payload", e);
-//        }
-//    }
 
 }

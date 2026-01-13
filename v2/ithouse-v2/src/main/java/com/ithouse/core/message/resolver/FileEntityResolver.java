@@ -1,5 +1,6 @@
 package com.ithouse.core.message.resolver;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ithouse.core.message.interfaces.EnableFile;
 import com.ithouse.core.message.processor.services.ProcessorService;
 import org.jspecify.annotations.Nullable;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class FileEntityResolver implements HandlerMethodArgumentResolver {
@@ -34,11 +36,11 @@ public class FileEntityResolver implements HandlerMethodArgumentResolver {
                                             NativeWebRequest webRequest,
                                             @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
-        List<MultipartFile> file = webRequest.getParameterValues("files") != null
-                ? ((MultipartHttpServletRequest) webRequest.getNativeRequest()).getFiles("files") : null;
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) webRequest.getNativeRequest();
+        List<MultipartFile> files = multipartRequest.getFiles("files");
 
         String type = webRequest.getParameter("type");
-        String metadata = webRequest.getParameter("metadata");
+        String metadata = webRequest.getParameter("payload");
 
         if (type == null) {
             throw new IllegalArgumentException("Missing type parameter");
@@ -47,6 +49,10 @@ public class FileEntityResolver implements HandlerMethodArgumentResolver {
             throw new IllegalArgumentException("Missing metadata parameter");
         }
 
-        return processorService.buildFileEntity(type, metadata, file);
+        return processorService.buildFileEntity(type, metadata, files);
+    }
+
+    public Map<String, String> covert2Map(String value) throws JsonProcessingException {
+        return processorService.covertString2Map(value);
     }
 }

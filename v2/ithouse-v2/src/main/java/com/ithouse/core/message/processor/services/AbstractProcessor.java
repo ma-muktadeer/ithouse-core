@@ -1,6 +1,7 @@
 package com.ithouse.core.message.processor.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.ithouse.core.message.AbstractMessageHeader;
@@ -8,6 +9,7 @@ import com.ithouse.core.message.FilePayload;
 import com.ithouse.core.message.GenericMessage;
 import com.ithouse.core.message.GenericMessageHeader;
 import com.ithouse.core.message.interfaces.EnableFile;
+import com.ithouse.core.message.interfaces.FileAware;
 import com.ithouse.core.message.interfaces.Message;
 import com.ithouse.core.message.processor.interfaces.JsonProcessor;
 import org.apache.logging.log4j.LogManager;
@@ -37,7 +39,6 @@ abstract class AbstractProcessor implements JsonProcessor {
     }
 
     protected AbstractProcessor(ObjectMapper mapper) {
-//        this.mapper = mapper1;
 
         this.mapper = mapper != null ? mapper : createDefaultMapper();
     }
@@ -148,36 +149,29 @@ abstract class AbstractProcessor implements JsonProcessor {
 
     }
 
-//    private Class<? extends EnableFile> resolveFileClass(String contentType, String className) {
-//        Class<?> rawClass = classCache.computeIfAbsent(contentType, key -> {
-//            try {
-//                return Class.forName(className);
-//            } catch (ClassNotFoundException e) {
-//                throw new IllegalStateException("Unknown class for content type: " + key, e);
-//            }
-//        });
-//        return rawClass.asSubclass(EnableFile.class);
-//    }
-
-
-    //    public EnableFile buildFileEntity(String type, String metadata, List<MultipartFile> files) throws JsonProcessingException {
-//       Class<? extends EnableFile> clazz = resolveFileClass(type, type);
-//       EnableFile entity = mapper.readValue(metadata, clazz);
-//       entity.setFiles(files);
-//        return entity;
-//    }
-
     public <T> EnableFile<T> buildFileEntity(String type, String metadata, List<MultipartFile> files) throws JsonProcessingException {
 
         Class<?> itemClass = findPayloadClass(type);
         JavaType listType = mapper.getTypeFactory().constructCollectionType(List.class, itemClass);
         List<T> items = mapper.readValue(metadata, listType);
+        if (files != null) {
+            attachFilesIfSupported(items, files);
+        }
         FilePayload<T> payload = new FilePayload<>();
         payload.setItems(items);
         payload.setFiles(files);
 
         return payload;
     }
+
+    private <T> void attachFilesIfSupported(List<T> items, List<MultipartFile> files) {
+        for (T item : items) {
+            if (item instanceof FileAware fileAware) {
+                fileAware.setFiles(files);
+            }
+        }
+    }
+
 
     public <T> Message<T> buildMessage(EnableFile<T> enableFile, AbstractMessageHeader abstractMessageHeader) {
         GenericMessage<T> message = new GenericMessage<>();
@@ -186,12 +180,9 @@ abstract class AbstractProcessor implements JsonProcessor {
         return message;
     }
 
+    public Map<String, String> covertString2Map(String value) throws JsonProcessingException {
+        return mapper.readValue(value, new TypeReference<Map<String, String>>() {
+        });
+    }
 
-//    private <T extends EnableFile> T convert(EnableFile enFl, Class<?> rawClass) {
-//        Class<T> targetClass = (Class<T>) rawClass.asSubclass(EnableFile.class);
-//        if (!targetClass.isInstance(enFl)) {
-//            throw new IllegalArgumentException("Object is not of type " + targetClass.getSimpleName());
-//        }
-//        return targetClass.cast(enFl);
-//    }
 }
