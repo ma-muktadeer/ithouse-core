@@ -11,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Map;
 
 public class MessageHeaderResolver implements HandlerMethodArgumentResolver {
@@ -19,6 +18,7 @@ public class MessageHeaderResolver implements HandlerMethodArgumentResolver {
 
     private static final String VIA = "Via";
     public final FileEntityResolver fileEntityResolver;
+
     public MessageHeaderResolver(FileEntityResolver fileEntityResolver) {
         this.fileEntityResolver = fileEntityResolver;
     }

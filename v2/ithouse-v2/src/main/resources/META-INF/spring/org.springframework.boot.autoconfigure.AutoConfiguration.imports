@@ -1,1 +1,2 @@
 com.ithouse.core.security.permission.config.SecurityLibAutoConfiguration
+com.ithouse.core.client.config.ClientAutoConfiguration
