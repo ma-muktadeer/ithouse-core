@@ -45,11 +45,37 @@ class ItHouseDBValueTest {
         });
     }
 
+    @Test
+    void multiTypeInjection() {
+        contextRunner.run(context -> {
+            MultiTypeBean bean = context.getBean(MultiTypeBean.class);
+            TestConfigProvider provider = context.getBean(TestConfigProvider.class);
+
+            // Set provider values
+            provider.addConfig("INT_VAL", "123");
+            provider.addConfig("LONG_VAL", "456789");
+            provider.addConfig("BOOL_VAL", "true");
+
+            // Trigger refresh
+            context.getBean(ConfigRefreshService.class).refresh();
+
+            // Verify
+            assertThat(bean.getIntValue()).isEqualTo(123);
+            assertThat(bean.getLongValue()).isEqualTo(456789L);
+            assertThat(bean.isBoolValue()).isTrue();
+        });
+    }
+
     @Configuration
     static class TestConfig {
         @Bean
         public TestBean testBean() {
             return new TestBean();
+        }
+
+        @Bean
+        public MultiTypeBean multiTypeBean() {
+            return new MultiTypeBean();
         }
 
         @Bean
@@ -67,11 +93,39 @@ class ItHouseDBValueTest {
         }
     }
 
+    static class MultiTypeBean {
+        @ItHouseDBValue(defaultValue = "0", configSubGroup = "INT_VAL")
+        private int intValue;
+
+        @ItHouseDBValue(defaultValue = "0", configSubGroup = "LONG_VAL")
+        private Long longValue;
+
+        @ItHouseDBValue(defaultValue = "false", configSubGroup = "BOOL_VAL")
+        private boolean boolValue;
+
+        public int getIntValue() {
+            return intValue;
+        }
+
+        public Long getLongValue() {
+            return longValue;
+        }
+
+        public boolean isBoolValue() {
+            return boolValue;
+        }
+    }
+
     static class TestConfigProvider implements ItHouseConfigProvider {
         private String value = "initial";
+        private final Map<String, String> configs = new HashMap<>();
 
         public void setValue(String value) {
             this.value = value;
+        }
+
+        public void addConfig(String key, String val) {
+            configs.put(key, val);
         }
 
         @Override
@@ -79,7 +133,7 @@ class ItHouseDBValueTest {
             if ("TEST_KEY".equals(configSubGroup)) {
                 return value;
             }
-            return null;
+            return configs.get(configSubGroup);
         }
     }
 }

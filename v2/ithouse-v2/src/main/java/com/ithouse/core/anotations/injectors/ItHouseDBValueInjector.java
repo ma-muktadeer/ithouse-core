@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.SmartInitializingSingleton;
@@ -27,6 +28,26 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
 
     // Cache for storing annotated fields to avoid expensive scans on refresh
     private final List<CachedField> cachedFields = new ArrayList<>();
+
+    private static final Map<Class<?>, Function<String, Object>> CONVERTERS = new HashMap<>();
+
+    static {
+        CONVERTERS.put(String.class, s -> s);
+        CONVERTERS.put(Integer.class, Integer::parseInt);
+        CONVERTERS.put(int.class, Integer::parseInt);
+        CONVERTERS.put(Boolean.class, Boolean::parseBoolean);
+        CONVERTERS.put(boolean.class, Boolean::parseBoolean);
+        CONVERTERS.put(Long.class, Long::parseLong);
+        CONVERTERS.put(long.class, Long::parseLong);
+        CONVERTERS.put(Double.class, Double::parseDouble);
+        CONVERTERS.put(double.class, Double::parseDouble);
+        CONVERTERS.put(Float.class, Float::parseFloat);
+        CONVERTERS.put(float.class, Float::parseFloat);
+        CONVERTERS.put(Short.class, Short::parseShort);
+        CONVERTERS.put(short.class, Short::parseShort);
+        CONVERTERS.put(Byte.class, Byte::parseByte);
+        CONVERTERS.put(byte.class, Byte::parseByte);
+    }
 
     @Autowired
     private Environment env;
@@ -161,28 +182,18 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
     }
 
     private Object castValue(String value, Class<?> type) {
-        if (value == null)
+        if (value == null) {
             return null;
+        }
+
         String str = value.trim();
+        Function<String, Object> converter = CONVERTERS.get(type);
 
-        if (type == String.class)
-            return str;
-        if (type == Integer.class || type == int.class)
-            return Integer.parseInt(str);
-        if (type == Boolean.class || type == boolean.class)
-            return Boolean.parseBoolean(str);
-        if (type == Long.class || type == long.class)
-            return Long.parseLong(str);
-        if (type == Double.class || type == double.class)
-            return Double.parseDouble(str);
-        if (type == Float.class || type == float.class)
-            return Float.parseFloat(str);
-        if (type == Short.class || type == short.class)
-            return Short.parseShort(str);
-        if (type == Byte.class || type == byte.class)
-            return Byte.parseByte(str);
+        if (converter != null) {
+            return converter.apply(str);
+        }
 
-        return value;
+        return str;
     }
 
     /**
