@@ -2,6 +2,7 @@ package com.ithouse.core.anotations.injectors;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -13,18 +14,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ithouse.core.anotations.ItHouseDBValue;
 import com.ithouse.core.anotations.services.ItHouseDBValueService;
 
-@Component
 public class ItHouseDBValueInjector implements ApplicationContextAware, SmartInitializingSingleton {
 
     private ApplicationContext context;
     private final ItHouseDBValueService itHouseDBValueService;
     private final ObjectMapper objectMapper;
+
+    // Cache for storing annotated fields to avoid expensive scans on refresh
+    private final List<CachedField> cachedFields = new ArrayList<>();
 
     @Autowired
     private Environment env;
@@ -41,22 +43,36 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
 
     @Override
     public void afterSingletonsInstantiated() {
-        try {
-            afterPropertiesSet();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        populateCacheAndInject();
     }
 
-    private void afterPropertiesSet() {
+    /**
+     * Scans all beans for @ItHouseDBValue annotations, populates the cache,
+     * and performs initial injection.
+     */
+    private void populateCacheAndInject() {
         String[] beanNames = context.getBeanDefinitionNames();
         for (String beanName : beanNames) {
-            Object bean = context.getBean(beanName);
-            processBean(bean);
+            try {
+                Object bean = context.getBean(beanName);
+                processBean(bean, true);
+            } catch (Exception e) {
+                // Skip beans that cannot be instantiated or processed
+            }
         }
     }
 
-    private void processBean(Object bean) {
+    /**
+     * Re-injects values into cached fields only.
+     * Extremely efficient compared to a full bean scan.
+     */
+    public void refresh() {
+        for (CachedField cachedField : cachedFields) {
+            injectValue(cachedField.targetBean, cachedField.field, cachedField.annotation);
+        }
+    }
+
+    private void processBean(Object bean, boolean caching) {
         Object targetBean = AopProxyUtils.getSingletonTarget(bean);
         if (targetBean == null) {
             targetBean = bean;
@@ -65,29 +81,46 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
         for (Field field : targetBean.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(ItHouseDBValue.class)) {
                 ItHouseDBValue annotation = field.getAnnotation(ItHouseDBValue.class);
-                String value = itHouseDBValueService.getConfigValue(
-                        annotation.configGroup(),
-                        annotation.configSubGroup(),
-                        // annotation.defaultValue()
-                        env.resolvePlaceholders(annotation.defaultValue()));
-
-                try {
-                    field.setAccessible(true);
-
-                    switch (field.getType().getSimpleName()) {
-                        case "List" -> field.set(targetBean, parseList(value, field));
-                        case "Map" -> field.set(targetBean, parse2Map(value, field));
-                        case "String" -> field.set(targetBean, value);
-                        default -> field.set(targetBean, objectMapper.convertValue(value, field.getType()));
-                    }
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Failed to inject ItHouseDBValue for field: " + field.getName(), e);
-                } catch (IllegalArgumentException e) {
-                    throw new RuntimeException(
-                            "Failed to convert value for field: " + field.getName() + " value: " + value, e);
+                if (caching) {
+                    cachedFields.add(new CachedField(targetBean, field, annotation));
                 }
+                injectValue(targetBean, field, annotation);
             }
         }
+    }
+
+    private void injectValue(Object targetBean, Field field, ItHouseDBValue annotation) {
+        String value = itHouseDBValueService.getConfigValue(
+                annotation.configGroup(),
+                annotation.configSubGroup(),
+                env.resolvePlaceholders(annotation.defaultValue()));
+
+        try {
+            field.setAccessible(true);
+            Object convertedValue = convert(value, field);
+            field.set(targetBean, convertedValue);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to inject ItHouseDBValue for field: " + field.getName()
+                    + " in bean " + targetBean.getClass().getSimpleName(), e);
+        }
+    }
+
+    private Object convert(String value, Field field) throws Exception {
+        Class<?> fieldType = field.getType();
+
+        if (fieldType == String.class) {
+            return value;
+        }
+
+        if (List.class.isAssignableFrom(fieldType)) {
+            return parseList(value, field);
+        }
+
+        if (Map.class.isAssignableFrom(fieldType)) {
+            return parse2Map(value, field);
+        }
+
+        return objectMapper.convertValue(value, fieldType);
     }
 
     private List<?> parseList(String rawValue, Field field) {
@@ -104,12 +137,12 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
 
     private Object parse2Map(String rawValue, Field field) {
         ParameterizedType pt = (ParameterizedType) field.getGenericType();
-        Class<?> key = (Class<?>) pt.getActualTypeArguments()[0];
-        Class<?> value = (Class<?>) pt.getActualTypeArguments()[1];
+        Class<?> keyType = (Class<?>) pt.getActualTypeArguments()[0];
+        Class<?> valueType = (Class<?>) pt.getActualTypeArguments()[1];
 
         try {
             return objectMapper.readValue(rawValue,
-                    objectMapper.getTypeFactory().constructMapType(Map.class, key, value));
+                    objectMapper.getTypeFactory().constructMapType(Map.class, keyType, valueType));
         } catch (Exception e) {
             if (rawValue == null || rawValue.trim().isEmpty()) {
                 return new HashMap<>();
@@ -121,7 +154,7 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
                 if (entry.length != 2) {
                     continue;
                 }
-                map.put(castValue(entry[0], key), castValue(entry[1], value));
+                map.put(castValue(entry[0], keyType), castValue(entry[1], valueType));
             }
             return map;
         }
@@ -130,19 +163,31 @@ public class ItHouseDBValueInjector implements ApplicationContextAware, SmartIni
     private Object castValue(String value, Class<?> type) {
         if (value == null)
             return null;
-        String str = value.toString().trim();
+        String str = value.trim();
 
-        return switch (type.getSimpleName()) {
-            case "String" -> str;
-            case "Integer", "int" -> Integer.parseInt(str);
-            case "Boolean", "boolean" -> Boolean.parseBoolean(str);
-            case "Long", "long" -> Long.parseLong(str);
-            case "Double", "double" -> Double.parseDouble(str);
-            case "Float", "float" -> Float.parseFloat(str);
-            case "Short", "short" -> Short.parseShort(str);
-            case "Byte", "byte" -> Byte.parseByte(str);
-            default -> value;
-        };
+        if (type == String.class)
+            return str;
+        if (type == Integer.class || type == int.class)
+            return Integer.parseInt(str);
+        if (type == Boolean.class || type == boolean.class)
+            return Boolean.parseBoolean(str);
+        if (type == Long.class || type == long.class)
+            return Long.parseLong(str);
+        if (type == Double.class || type == double.class)
+            return Double.parseDouble(str);
+        if (type == Float.class || type == float.class)
+            return Float.parseFloat(str);
+        if (type == Short.class || type == short.class)
+            return Short.parseShort(str);
+        if (type == Byte.class || type == byte.class)
+            return Byte.parseByte(str);
+
+        return value;
     }
 
+    /**
+     * Internal class to hold cached field information.
+     */
+    private static record CachedField(Object targetBean, Field field, ItHouseDBValue annotation) {
+    }
 }
